@@ -1,37 +1,44 @@
-## Welcome to GitHub Pages
+FHEM Presence tracker with Geofency webhook
+===========================================
 
-You can use the [editor on GitHub](https://github.com/ASIsnc/Federico/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
+This code enables [FHEM][1] PRESENCE state through [Geofencing][5] with the [Geofency iOS app][2].
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+It consists of:
+* A webhook (server script) that receives JSON POST requests from the Geofency app and writes the enter/exit events to a file.
+* A command line utility that is called from FHEM to generate presence state (1 or 0) from the data.
 
-### Markdown
+This script creates a more stable presence than the native "GEOFANCY" presence feature of FHEM: Since the iBeacon has a limited range, the app creates many "Enter" and "Exit" events. These events are "smoothed over" by this app by using a threshold for the absence.
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+System requirements
+-------------------
+* PHP 5.3 or better
+* [Composer][3]
 
-```markdown
-Syntax highlighted code block
+Installation
+------------
+- After extracting the sources in your web directory, run  
+	``composer install``.
+- Change the settings in ``settings.php`` if needed. 
+- Make sure that the data directory for the data file is writable.
+- Browse to your web directory. You should see the message "Not allowed." If you see the message "Filesystem error" check if the data directory for the data file is writable.
+- *(optional)* Create a .htaccess file to protect your web directory (see "Security considerations").
+- Install Geofency. Create a new location (either with a geofence or an iBeacon) and use its settings to set up a webhook for it, with the index.php as the endpoint.
+- FHEM: Add the following line to your FHEM cfg:   
+  ``define Geofency PRESENCE shellscript "php /path/to/your/webroot/checkpresence.php"``
 
-# Header 1
-## Header 2
-### Header 3
+Security considerations
+-----------------------
+Since the webhook is open for everyone, you should [protect it with a .htaccess file][4] and enter the data in Geofency.
 
-- Bulleted
-- List
+Ideas for future expansion
+--------------------------
+- Validate JSON
+- Verify phone id(s) and iBeacon UUID 
+- Differentiate between several beacon IDs for a more general use case of the webhook
+- Store all events in database (for statistics/debugging)
 
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
-```
-
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
-
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/ASIsnc/Federico/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://help.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
+[1]: http://fhem.de/
+[2]: http://www.geofency.com/
+[3]: https://getcomposer.org/
+[4]: http://lmgtfy.com/?q=password+protection+.htaccess
+[5]: https://en.wikipedia.org/wiki/Geo-fence
